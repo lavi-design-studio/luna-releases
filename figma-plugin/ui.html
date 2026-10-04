@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Luna import</title>
+<style>
+  :root { --gap: 12px; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font: 12px/1.45 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--figma-color-text, #1b1b1f);
+    background: var(--figma-color-bg, #fff);
+    padding: 16px;
+    display: flex; flex-direction: column; gap: var(--gap);
+    overflow-y: auto;
+  }
+  .paste {
+    width: 100%; min-height: 112px; resize: none; text-align: center; padding: 44px 16px 0; font: inherit; font-size: 13px; line-height: 1.4;
+    border: 1.5px dashed var(--figma-color-border, #c9c9d1); border-radius: 10px; background: var(--figma-color-bg, #fff); color: inherit; outline: none;
+    caret-color: transparent;
+  }
+  .paste::placeholder { color: var(--figma-color-text-secondary, #6b6b73); }
+  .paste:focus { border-color: var(--figma-color-border-brand, #0d99ff); background: var(--figma-color-bg-hover, #f7f7fa); }
+  .drop.small { border: 0; padding: 0; flex-direction: row; justify-content: center; gap: 10px; flex-wrap: wrap; }
+  h1 { font-size: 14px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  .sub { color: var(--figma-color-text-secondary, #6b6b73); margin: 2px 0 0; }
+  .drop {
+    border: 1.5px dashed var(--figma-color-border, #c9c9d1); border-radius: 10px; padding: 22px 16px;
+    text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center;
+    transition: background .12s, border-color .12s;
+  }
+  .drop.over { background: var(--figma-color-bg-hover, #f2f2f5); border-color: var(--figma-color-border-brand, #0d99ff); }
+  .drop.ok { border-style: solid; }
+  .drop small { color: var(--figma-color-text-secondary, #6b6b73); }
+  button {
+    font: inherit; font-weight: 500; border-radius: 7px; padding: 7px 14px; cursor: pointer;
+    border: 1px solid var(--figma-color-border, #c9c9d1); background: var(--figma-color-bg, #fff); color: inherit;
+  }
+  button:hover { background: var(--figma-color-bg-hover, #f2f2f5); }
+  button.primary { background: var(--figma-color-bg-brand, #0d99ff); border-color: transparent; color: var(--figma-color-text-onbrand, #fff); }
+  button.primary:hover { background: var(--figma-color-bg-brand-hover, #0b86e0); }
+  button:disabled { opacity: .45; cursor: default; }
+  .card { border: 1px solid var(--figma-color-border, #e3e3e8); border-radius: 8px; padding: 10px 12px; display: grid; gap: 4px; }
+  .card b { font-weight: 600; word-break: break-word; }
+  .kv { display: flex; justify-content: space-between; gap: 12px; color: var(--figma-color-text-secondary, #6b6b73); }
+  .kv span:last-child { color: var(--figma-color-text, #1b1b1f); font-variant-numeric: tabular-nums; text-align: right; }
+  fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 8px; }
+  label.row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  label.check { display: flex; align-items: flex-start; gap: 8px; }
+  label.check input { margin-top: 2px; }
+  input[type=text], input[type=number], select {
+    font: inherit; padding: 6px 8px; border-radius: 6px; width: 190px;
+    border: 1px solid var(--figma-color-border, #c9c9d1); background: var(--figma-color-bg, #fff); color: inherit;
+  }
+  input[type=number] { width: 80px; }
+  .bar { height: 6px; border-radius: 3px; background: var(--figma-color-bg-secondary, #ececf0); overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--figma-color-bg-brand, #0d99ff); transition: width .1s linear; }
+  .actions { display: flex; gap: 8px; margin-top: auto; }
+  .actions .primary { flex: 1; }
+  .warn { color: var(--figma-color-text-warning, #a05a00); }
+  .err { color: var(--figma-color-text-danger, #c4262e); }
+  ul { margin: 4px 0 0; padding-left: 16px; }
+  li { margin: 2px 0; }
+  .hidden { display: none !important; }
+  .mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; }
+</style>
+</head>
+<body>
+  <div>
+    <h1>Luna import</h1>
+    <p class="sub">Builds a page from what Luna copied, pictures included.</p>
+  </div>
+
+  <textarea id="paste" class="paste" spellcheck="false" autofocus placeholder="Press Ctrl+V to import what Luna copied"></textarea>
+  <div id="drop" class="drop small">
+    <small id="hint">In Luna, press Ctrl+Shift+F first. Or, without the clipboard:</small>
+    <button id="pick">Choose the snapshot folder</button>
+    <input id="file" type="file" webkitdirectory multiple class="hidden">
+  </div>
+
+  <div id="found" class="card hidden"></div>
+
+  <fieldset id="options" class="hidden">
+    <label class="row">Page name <input id="pageName" type="text" placeholder="Current page"></label>
+    <label class="check"><input id="confirm" type="checkbox"><span>Ask before importing what I paste</span></label>
+    <label class="check"><input id="auto" type="checkbox" checked><span>Use auto layout where the page proves it</span></label>
+    <label class="check"><input id="images" type="checkbox" checked><span>Images</span></label>
+    <label class="row">Scale <input id="scale" type="number" min="0.1" max="4" step="0.1" value="1"></label>
+  </fieldset>
+
+  <div id="progress" class="hidden">
+    <div class="bar"><i id="barfill"></i></div>
+    <div class="sub" id="note"></div>
+  </div>
+
+  <div id="result" class="card hidden"></div>
+
+  <div class="actions">
+    <button id="go" class="primary" disabled>Import</button>
+    <button id="cancel" class="hidden">Cancel</button>
+  </div>
+
+<script>
+// The clipboard transport: "LUNA1:" + base64( gzip( container ) ), written by Luna (src/Core/SnapshotTransfer.cs), read here.
+// container (little-endian): "LUN1", u32 n + snapshot.json (UTF-8), u32 count, count x { u32 n + name (UTF-8), u32 m + file bytes }.
+// Runs in the plugin window (a browser) and in node tests. Decodes in slices so a 60 MB text does not freeze the window, and never keeps the text.
+var LunaTransfer = (function () {
+  'use strict';
+  var PREFIX = 'LUNA1:';
+  var MSG_FOREIGN = 'That is not what Luna copied. In Luna press Ctrl+Shift+F, then press Ctrl+V here.';
+  var MSG_DAMAGED = 'What was pasted looks cut off or damaged. Copy again in Luna (Ctrl+Shift+F) and paste once more.';
+
+  function fail(kind, message) { var e = new Error(message); e.kind = kind; return e; }
+  function tick() { return new Promise(function (r) { setTimeout(r, 0); }); }
+  function looksLike(text) { return typeof text === 'string' && text.slice(0, PREFIX.length) === PREFIX; }
+
+  // ---- base64 in slices (a multiple of 4 characters each), whitespace ignored
+  async function fromBase64(text, start, progress) {
+    var n = text.length - start, out, o = 0, SLICE = 3 * 1024 * 1024;
+    // length of the data: whitespace is rare, so count it in one pass of the slices
+    var parts = [], pos = start, total = 0, carry = '';
+    while (pos < text.length) {
+      var piece = carry + text.slice(pos, pos + SLICE).replace(/\s+/g, '');
+      pos += SLICE;
+      var keep = pos >= text.length ? piece.length : piece.length - (piece.length % 4);
+      carry = piece.slice(keep);
+      piece = piece.slice(0, keep);
+      if (pos >= text.length && piece.length % 4 !== 0) throw fail('damaged', MSG_DAMAGED);
+      var bin;
+      try { bin = atob(piece); } catch (e) { throw fail('damaged', MSG_DAMAGED); }
+      var u = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+      parts.push(u); total += u.length;
+      if (progress) progress(Math.min(pos, text.length) - start, n, 'Reading what Luna copied');
+      await tick();
+    }
+    out = new Uint8Array(total);
+    for (var k = 0; k < parts.length; k++) { out.set(parts[k], o); o += parts[k].length; }
+    return out;
+  }
+
+  // ---- gunzip: the browser's own, else a small inflate
+  var CRC = null;
+  function crc32(b) {
+    if (!CRC) { CRC = new Int32Array(256); for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; CRC[n] = c; } }
+    var crc = -1;
+    for (var i = 0; i < b.length; i++) crc = CRC[(crc ^ b[i]) & 255] ^ (crc >>> 8);
+    return (crc ^ -1) >>> 0;
+  }
+  var LBASE = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258];
+  var LEXT = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0];
+  var DBASE = [1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577];
+  var DEXT = [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13];
+  var CLORDER = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15];
+  function huff(lengths, n) {
+    var count = new Uint16Array(16), symbol = new Uint16Array(n), offs = new Uint16Array(16), i;
+    for (i = 0; i < n; i++) count[lengths[i]]++;
+    for (i = 1; i < 15; i++) offs[i + 1] = offs[i] + count[i];
+    for (i = 0; i < n; i++) if (lengths[i]) symbol[offs[lengths[i]]++] = i;
+    return { count: count, symbol: symbol };
+  }
+  // raw deflate from src[pos..] into `out` (exactly out.length bytes expected)
+  function inflateRaw(src, pos, out) {
+    var bitbuf = 0, bitcnt = 0, op = 0, last, i;
+    function bits(n) {
+      while (bitcnt < n) { if (pos >= src.length) throw new Error('end'); bitbuf |= src[pos++] << bitcnt; bitcnt += 8; }
+      var v = bitbuf & ((1 << n) - 1); bitbuf >>>= n; bitcnt -= n; return v;
+    }
+    function decode(h) {
+      var code = 0, first = 0, index = 0;
+      for (var len = 1; len <= 15; len++) {
+        code |= bits(1);
+        var c = h.count[len];
+        if (code - c < first) return h.symbol[index + (code - first)];
+        index += c; first += c; first <<= 1; code <<= 1;
+      }
+      throw new Error('code');
+    }
+    var fixedL = null, fixedD = null;
+    do {
+      last = bits(1);
+      var type = bits(2);
+      if (type === 0) {
+        bitbuf = 0; bitcnt = 0;
+        if (pos + 4 > src.length) throw new Error('end');
+        var len = src[pos] | (src[pos + 1] << 8);
+        if ((len ^ 0xFFFF) !== (src[pos + 2] | (src[pos + 3] << 8))) throw new Error('stored');
+        pos += 4;
+        if (pos + len > src.length || op + len > out.length) throw new Error('end');
+        out.set(src.subarray(pos, pos + len), op); op += len; pos += len;
+      } else if (type === 1 || type === 2) {
+        var lh, dh;
+        if (type === 1) {
+          if (!fixedL) { var l = new Uint8Array(288); for (i = 0; i < 144; i++) l[i] = 8; for (; i < 256; i++) l[i] = 9; for (; i < 280; i++) l[i] = 7; for (; i < 288; i++) l[i] = 8; fixedL = huff(l, 288); var d = new Uint8Array(30).fill(5); fixedD = huff(d, 30); }
+          lh = fixedL; dh = fixedD;
+        } else {
+          var nlen = bits(5) + 257, ndist = bits(5) + 1, ncode = bits(4) + 4, lengths = new Uint8Array(320);
+          for (i = 0; i < ncode; i++) lengths[CLORDER[i]] = bits(3);
+          var ch = huff(lengths, 19);
+          lengths = new Uint8Array(320);
+          for (i = 0; i < nlen + ndist;) {
+            var sym = decode(ch);
+            if (sym < 16) lengths[i++] = sym;
+            else {
+              var rep, val = 0;
+              if (sym === 16) { if (i === 0) throw new Error('rep'); val = lengths[i - 1]; rep = 3 + bits(2); } else if (sym === 17) rep = 3 + bits(3); else rep = 11 + bits(7);
+              if (i + rep > nlen + ndist) throw new Error('rep');
+              while (rep--) lengths[i++] = val;
+            }
+          }
+          lh = huff(lengths.subarray(0, nlen), nlen); dh = huff(lengths.subarray(nlen, nlen + ndist), ndist);
+        }
+        for (;;) {
+          var s = decode(lh);
+          if (s < 256) { if (op >= out.length) throw new Error('end'); out[op++] = s; }
+          else if (s === 256) break;
+          else {
+            s -= 257;
+            if (s >= 29) throw new Error('sym');
+            var ln = LBASE[s] + bits(LEXT[s]), ds = decode(dh);
+            if (ds >= 30) throw new Error('dist');
+            var dist = DBASE[ds] + bits(DEXT[ds]);
+            if (dist > op || op + ln > out.length) throw new Error('dist');
+            while (ln--) { out[op] = out[op - dist]; op++; }
+          }
+        }
+      } else throw new Error('type');
+    } while (!last);
+    return pos;
+  }
+  function gunzipFallback(b) {
+    if (b.length < 18 || b[0] !== 0x1f || b[1] !== 0x8b || b[2] !== 8) throw new Error('header');
+    var flg = b[3], pos = 10;
+    if (flg & 4) pos += 2 + (b[pos] | (b[pos + 1] << 8));
+    if (flg & 8) { while (b[pos++]) { /* name */ } }
+    if (flg & 16) { while (b[pos++]) { /* comment */ } }
+    if (flg & 2) pos += 2;
+    var t = b.length - 8, isize = (b[t + 4] | (b[t + 5] << 8) | (b[t + 6] << 16) | (b[t + 7] << 24)) >>> 0;
+    var out = new Uint8Array(isize);
+    var end = inflateRaw(b, pos, out);
+    if (end > t) throw new Error('end');
+    var crc = (b[t] | (b[t + 1] << 8) | (b[t + 2] << 16) | (b[t + 3] << 24)) >>> 0;
+    if (crc32(out) !== crc) throw new Error('crc');
+    return out;
+  }
+  async function gunzipNative(b) {
+    var stream = new Blob([b]).stream().pipeThrough(new DecompressionStream('gzip'));
+    var reader = stream.getReader(), chunks = [], total = 0;
+    for (;;) { var r = await reader.read(); if (r.done) break; chunks.push(r.value); total += r.value.length; }
+    var out = new Uint8Array(total), o = 0;
+    for (var i = 0; i < chunks.length; i++) { out.set(chunks[i], o); o += chunks[i].length; }
+    return out;
+  }
+  async function gunzip(b, forceFallback) {
+    if (b.length < 18 || b[0] !== 0x1f || b[1] !== 0x8b) throw fail('damaged', MSG_DAMAGED);
+    try {
+      if (!forceFallback && typeof DecompressionStream === 'function' && typeof Blob === 'function') return await gunzipNative(b);
+      return gunzipFallback(b);
+    } catch (e) { throw fail('damaged', MSG_DAMAGED); }
+  }
+
+  // ---- the container
+  function parse(b) {
+    var p = 0, dv = new DataView(b.buffer, b.byteOffset, b.byteLength);
+    function u32() { if (p + 4 > b.length) throw fail('damaged', MSG_DAMAGED); var v = dv.getUint32(p, true); p += 4; return v; }
+    function take(n) { if (n > b.length - p) throw fail('damaged', MSG_DAMAGED); var s = b.subarray(p, p + n); p += n; return s; }
+    if (b.length < 8 || b[0] !== 0x4C || b[1] !== 0x55 || b[2] !== 0x4E || b[3] !== 0x31) throw fail('damaged', MSG_DAMAGED);
+    p = 4;
+    var snap = take(u32()), count = u32();
+    if (count > 100000) throw fail('damaged', MSG_DAMAGED);
+    var assets = [], dec = new TextDecoder('utf-8');
+    for (var i = 0; i < count; i++) { var name = dec.decode(take(u32())); assets.push({ name: name, bytes: take(u32()) }); }
+    return { snapshot: snap, assets: assets };
+  }
+
+  // text -> { snapshot: Uint8Array, snapshotText, assets: [{name, bytes}] }; throws Error with .kind 'foreign' | 'damaged' | 'unreadable'
+  async function decode(text, progress, opts) {
+    if (!looksLike(text)) throw fail('foreign', MSG_FOREIGN);
+    var gz = await fromBase64(text, PREFIX.length, progress);
+    if (progress) progress(1, 1, 'Unpacking');
+    var raw = await gunzip(gz, opts && opts.forceFallback);
+    var c = parse(raw);
+    var snapshotText;
+    try { snapshotText = new TextDecoder('utf-8', { fatal: true }).decode(c.snapshot); } catch (e) { throw fail('damaged', MSG_DAMAGED); }
+    return { snapshot: c.snapshot, snapshotText: snapshotText, assets: c.assets };
+  }
+
+  return { decode: decode, looksLike: looksLike, PREFIX: PREFIX, MSG_FOREIGN: MSG_FOREIGN, MSG_DAMAGED: MSG_DAMAGED, _gunzipFallback: gunzipFallback, _crc32: crc32 };
+})();
+
+</script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  // What is waiting to be imported: from the paste (everything in memory) or from a folder (read when it is sent).
+  //   { snap, text(): Promise<string>, assets: [{ key, svg, mime, size, load(): Promise<Uint8Array|string> }], pics, bytes, missing, kind }
+  var source = null, busy = false;
+
+  function send(m) { parent.postMessage({ pluginMessage: m }, '*'); }
+  function tick() { return new Promise(function (r) { setTimeout(r, 0); }); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function mb(n) { return (n / 1048576).toFixed(n < 10485760 ? 1 : 0) + ' MB'; }
+  function progress(done, total, note) {
+    $('progress').classList.remove('hidden');
+    $('barfill').style.width = (total ? Math.min(100, done / total * 100) : 0) + '%';
+    $('note').textContent = note || '';
+  }
+
+  // ---- the paste: Ctrl+V in the big box
+  var paste = $('paste');
+  function focusPaste() { if (!busy) paste.focus(); }
+  paste.addEventListener('paste', function (e) {
+    // the text is taken from the event and never put in the box (it can be tens of MB); nothing keeps it
+    var t = e.clipboardData && e.clipboardData.getData('text/plain');
+    e.preventDefault();
+    paste.value = '';
+    if (t) fromText(t, false); else if (!busy) fail('Nothing to paste. In Luna press Ctrl+Shift+F, then press Ctrl+V here.');
+    t = null;
+  });
+  paste.addEventListener('input', function () { paste.value = ''; });
+  window.addEventListener('focus', focusPaste);
+  document.addEventListener('click', function (e) { if (!/^(BUTTON|INPUT|SELECT|A|LABEL|TEXTAREA)$/.test(e.target.tagName)) focusPaste(); });
+  focusPaste();
+  // Once on open: the clipboard itself, if Figma lets the window read it (it may not: then Ctrl+V does the same)
+  try {
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      navigator.clipboard.readText().then(function (t) { if (LunaTransfer.looksLike(t)) fromText(t, true); t = null; }, function () { /* denied: the paste box is there */ });
+    }
+  } catch (e) { /* the same */ }
+
+  async function fromText(text, quiet) {
+    if (busy) return;
+    if (!LunaTransfer.looksLike(text)) { if (!quiet) fail(LunaTransfer.MSG_FOREIGN); return; }
+    busy = true; $('result').classList.add('hidden'); $('cancel').classList.add('hidden');
+    try {
+      var d = await LunaTransfer.decode(text, function (a, b, n) { progress(a, b, n + ' (' + mb(a * 0.75) + ' of ' + mb(b * 0.75) + ')'); });
+      text = null;
+      var snap;
+      try { snap = JSON.parse(d.snapshotText); } catch (e) { throw new Error('The copied snapshot could not be read (it is not valid JSON). Copy again in Luna and paste once more.'); }
+      if (!snap || snap.version !== 1 || !snap.root) throw new Error('This is not a Luna design snapshot (version 1). Copy again in Luna and paste once more.');
+      var byName = {}, bytes = 0, pics = 0, missing = 0, list = [];
+      d.assets.forEach(function (f) { byName[f.name] = f; });
+      var snapText = d.snapshotText;
+      (snap.assets || []).forEach(function (a) {
+        if (a.file) {
+          var f = byName[a.file.replace(/\\/g, '/')];
+          if (f) {
+            var svg = a.kind === 'svg' || /\.svg$/i.test(a.file) || a.mime === 'image/svg+xml';
+            list.push({ key: a.file, svg: svg, mime: a.mime || '', size: f.bytes.length, load: svg ? async function () { return new TextDecoder().decode(f.bytes); } : async function () { return f.bytes; } });
+            bytes += f.bytes.length;
+          } else missing++;
+        }
+        if ((a.kind === 'image' || a.kind === 'canvas' || a.kind === 'video') && (a.status === 'ok' || a.status === 'fetched')) pics++;
+      });
+      d = null;
+      source = { kind: 'paste', snap: snap, text: async function () { return snapText; }, assets: list, pics: pics, bytes: bytes, missing: missing };
+      busy = false;
+      show();
+      if (!$('confirm').checked) importNow();
+      else progress(1, 1, 'Ready. Check the options and press Import.');
+    } catch (e) { busy = false; fail(e && e.message ? e.message : String(e)); }
+  }
+
+  // ---- the folder (the second way in)
+  $('pick').onclick = function () { $('file').click(); };
+  $('file').onchange = function (e) {
+    var m = new Map(), list = e.target.files, i;
+    for (i = 0; i < list.length; i++) m.set(list[i].webkitRelativePath || list[i].name, list[i]);
+    takeFolder(m);
+  };
+  var drop = document.body;
+  ['dragenter', 'dragover'].forEach(function (n) { drop.addEventListener(n, function (e) { e.preventDefault(); $('drop').classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function (n) { drop.addEventListener(n, function (e) { e.preventDefault(); $('drop').classList.remove('over'); }); });
+  drop.addEventListener('drop', async function (e) {
+    var items = e.dataTransfer && e.dataTransfer.items, m = new Map();
+    if (!items) return;
+    var entries = [];
+    for (var i = 0; i < items.length; i++) { var en = items[i].webkitGetAsEntry && items[i].webkitGetAsEntry(); if (en) entries.push(en); }
+    async function walk(en, path) {
+      if (en.isFile) { await new Promise(function (res) { en.file(function (f) { m.set(path + en.name, f); res(); }, res); }); return; }
+      var rd = en.createReader(), all = [];
+      for (;;) {
+        var batch = await new Promise(function (res) { rd.readEntries(res, function () { res([]); }); });
+        if (!batch.length) break;
+        all = all.concat(batch);
+      }
+      for (var j = 0; j < all.length; j++) await walk(all[j], path + en.name + '/');
+    }
+    for (var k = 0; k < entries.length; k++) await walk(entries[k], '');
+    takeFolder(m);
+  });
+
+  async function takeFolder(m) {
+    var best = null;
+    m.forEach(function (f, p) { if (/(^|\/)snapshot\.json$/i.test(p) && (best === null || p.length < best.length)) best = p; });
+    if (!best) { fail('No snapshot.json in that folder. Pick the folder Luna wrote (Documents\\Luna\\Snapshots\\latest).'); return; }
+    var prefix = best.slice(0, best.length - 'snapshot.json'.length), files = new Map(), snap;
+    m.forEach(function (f, p) { if (p.indexOf(prefix) === 0) files.set(p.slice(prefix.length).replace(/\\/g, '/'), f); });
+    try { snap = JSON.parse(await files.get('snapshot.json').text()); }
+    catch (e) { fail('snapshot.json could not be read: ' + e.message); return; }
+    if (!snap || snap.version !== 1 || !snap.root) { fail('That is not a Luna design snapshot (version 1).'); return; }
+    var list = [], missing = 0, bytes = 0, pics = 0;
+    (snap.assets || []).forEach(function (a) {
+      if (a.file) {
+        var f = files.get(a.file.replace(/\\/g, '/'));
+        if (f) {
+          var svg = a.kind === 'svg' || /\.svg$/i.test(a.file) || a.mime === 'image/svg+xml';
+          list.push({ key: a.file, svg: svg, mime: a.mime || '', size: f.size, load: svg ? function () { return f.text(); } : async function () { return new Uint8Array(await f.arrayBuffer()); } });
+          bytes += f.size;
+        } else missing++;
+      }
+      if ((a.kind === 'image' || a.kind === 'canvas' || a.kind === 'video') && (a.status === 'ok' || a.status === 'fetched')) pics++;
+    });
+    source = { kind: 'folder', snap: snap, text: function () { return files.get('snapshot.json').text(); }, assets: list, pics: pics, bytes: bytes, missing: missing };
+    show();
+  }
+
+  function fail(t) {
+    var f = $('found'); f.classList.remove('hidden'); f.innerHTML = '<span class="err">' + esc(t) + '</span>';
+    $('progress').classList.add('hidden');
+    $('options').classList.add('hidden'); $('go').disabled = true; source = null;
+  }
+  function show() {
+    var s = source.snap, host = ''; try { host = new URL(s.url).host; } catch (e) { host = s.url || ''; }
+    var st = s.stats || {};
+    var rows = [
+      ['Page', Math.round(s.page.w) + ' × ' + Math.round(s.page.h) + ' px, ' + s.theme],
+      ['Elements', (st.nodes || 0).toLocaleString() + (s.truncated ? ' (cut short)' : '')],
+      ['Pictures', source.pics + ' (' + mb(source.bytes) + ' in ' + (source.kind === 'paste' ? 'the paste' : 'files') + ')'],
+      ['Fonts', (s.fonts || []).length + ' (' + (s.fonts || []).filter(function (f) { return f.source === 'webfont' || f.source === 'missing'; }).length + ' web or missing)']
+    ];
+    var h = '<b>' + esc(s.title || host || 'Snapshot') + '</b><span class="sub">' + esc(host) + '</span>';
+    rows.forEach(function (r) { h += '<div class="kv"><span>' + r[0] + '</span><span>' + esc(r[1]) + '</span></div>'; });
+    if (s.truncated) h += '<span class="warn">The exporter stopped early (' + esc(s.truncated.reason) + '): only the first part of the page is in this snapshot.</span>';
+    if (source.missing) h += '<span class="warn">' + source.missing + ' picture file' + (source.missing > 1 ? 's' : '') + ' named in the snapshot ' + (source.missing > 1 ? 'are' : 'is') + ' not ' + (source.kind === 'paste' ? 'in the paste (very large pictures are left out of the copy)' : 'in the folder') + '.</span>';
+    var f = $('found'); f.classList.remove('hidden'); f.innerHTML = h;
+    $('options').classList.remove('hidden');
+    if (!$('pageName').value) $('pageName').value = 'Luna / ' + (host || 'page');
+    $('go').disabled = false;
+    $('result').classList.add('hidden');
+  }
+
+  // Figma reads PNG, JPEG and GIF (up to 4096 px a side): a WebP, AVIF or BMP from a page, or a very large picture, is drawn by this
+  // window's browser and handed over as PNG (JPEG when it has no transparency)
+  function dims(b) {
+    if (b[0] === 0x89 && b[1] === 0x50) return [(b[16] << 24 | b[17] << 16 | b[18] << 8 | b[19]) >>> 0, (b[20] << 24 | b[21] << 16 | b[22] << 8 | b[23]) >>> 0];
+    if (b[0] === 0x47 && b[1] === 0x49) return [b[6] | b[7] << 8, b[8] | b[9] << 8];
+    if (b[0] === 0xFF && b[1] === 0xD8) {
+      var i = 2;
+      while (i + 9 < b.length && b[i] === 0xFF) {
+        var m = b[i + 1], len = b[i + 2] << 8 | b[i + 3];
+        if (m >= 0xC0 && m <= 0xCF && m !== 0xC4 && m !== 0xC8 && m !== 0xCC) return [b[i + 7] << 8 | b[i + 8], b[i + 5] << 8 | b[i + 6]];
+        i += 2 + len;
+      }
+    }
+    return null;
+  }
+  async function normalise(b) {
+    var known = (b[0] === 0x89 && b[1] === 0x50) || (b[0] === 0xFF && b[1] === 0xD8) || (b[0] === 0x47 && b[1] === 0x49);
+    var d = known ? dims(b) : null;
+    if (known && (!d || Math.max(d[0], d[1]) <= 4096)) return b;
+    try {
+      var bmp = await createImageBitmap(new Blob([b]));
+      var k = Math.min(1, 4096 / Math.max(bmp.width, bmp.height));
+      var c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(bmp.width * k)); c.height = Math.max(1, Math.round(bmp.height * k));
+      var g = c.getContext('2d');
+      g.drawImage(bmp, 0, 0, c.width, c.height);
+      var t = document.createElement('canvas'); t.width = t.height = 64;
+      var tg = t.getContext('2d', { willReadFrequently: true });
+      tg.drawImage(bmp, 0, 0, 64, 64);
+      var px = tg.getImageData(0, 0, 64, 64).data, alpha = false;
+      for (var q = 3; q < px.length; q += 4) if (px[q] < 250) { alpha = true; break; }
+      bmp.close();
+      var blob = await new Promise(function (res) { alpha ? c.toBlob(res, 'image/png') : c.toBlob(res, 'image/jpeg', 0.92); });
+      return new Uint8Array(await blob.arrayBuffer());
+    } catch (e) { return b; }
+  }
+  window.__lunaNormalise = normalise;
+
+  // ---- send it to the plugin in pieces, then ask it to build
+  async function importNow() {
+    if (!source || busy) return;
+    var src = source;
+    busy = true; $('go').disabled = true; $('cancel').classList.remove('hidden'); $('result').classList.add('hidden');
+    try {
+      send({ type: 'reset' });
+      progress(0, 1, 'Sending the snapshot');
+      var text = await src.text(), PART = 1 << 20, n = Math.ceil(text.length / PART), i;
+      for (i = 0; i < n; i++) { send({ type: 'json', i: i, n: n, text: text.slice(i * PART, (i + 1) * PART) }); if (i % 4 === 3) await tick(); }
+      text = null;
+      for (var a = 0; a < src.assets.length; a++) {
+        var af = src.assets[a];
+        progress(a, src.assets.length, 'Sending pictures ' + (a + 1) + ' of ' + src.assets.length);
+        var data = await af.load();
+        if (af.svg) { send({ type: 'asset', id: af.key, mime: af.mime || 'image/svg+xml', text: true, i: 0, n: 1, size: data.length, data: data }); }
+        else {
+          var buf = await normalise(data), P = 1 << 19, np = Math.max(1, Math.ceil(buf.length / P));
+          for (i = 0; i < np; i++) send({ type: 'asset', id: af.key, mime: af.mime, i: i, n: np, size: buf.length, data: buf.slice(i * P, (i + 1) * P) });
+        }
+        if (a % 3 === 2) await tick();
+      }
+      progress(0, 1, 'Starting');
+      send({
+        type: 'go',
+        options: { pageName: $('pageName').value.trim(), autoLayout: $('auto').checked, images: $('images').checked, scale: parseFloat($('scale').value) || 1 }
+      });
+      if (src.kind === 'paste') { source = null; }     // what came from the clipboard is not kept once it has been sent
+    } catch (e) { done(); fail(e.message); }
+  }
+  function done() { busy = false; $('go').disabled = !source; $('cancel').classList.add('hidden'); focusPaste(); }
+  $('go').onclick = importNow;
+  $('cancel').onclick = function () { send({ type: 'cancel' }); };
+
+  var WHAT = {
+    font: 'Fonts Figma does not have, replaced', 'font-italic': 'Italic not available in the replacement font', 'picture-missing': 'Pictures the snapshot could not keep (grey box)',
+    'canvas-blank': 'Canvases with nothing to copy (WebGL), left empty', 'image-skipped': 'Pictures that did not come with it (grey box)', 'image-budget': 'Pictures over the size limit (grey box)',
+    'image-rejected': 'Pictures Figma refused', 'svg-rejected': 'Drawings Figma could not read', 'svg-missing': 'Drawings the snapshot could not keep',
+    'gradient-hints': 'Gradient midpoints dropped', 'tile-approx': 'Many-tile patterns tiled from the corner', 'tile-skipped': 'Repeating gradients with many tiles left out',
+    'clip-text': 'Gradient text drawn in one colour', 'clip-path': 'clip-path not drawn', filter: 'CSS filters other than blur not drawn', blend: 'Blend modes Figma lacks', 'text-stroke': 'Text outlines not drawn',
+    'truncated-by-plan': 'The page was cut to keep Figma responsive', 'truncated-by-exporter': 'The snapshot itself was cut short', 'fixed-nested': 'Fixed layers inside other layers not pinned', 'fixed-not-set': 'Fixed layers Figma would not pin',
+    'transform-kept-upright': 'Rotated boxes with children kept upright', 'bg-other': 'Background images of a kind not captured', scale: 'Scale not applied',
+    prop: 'Properties Figma refused (the layers are there without them)', 'node-failed': 'Layers Figma refused (an empty frame stands in)', 'elliptical-radius': 'Elliptical corners drawn round', 'vertical-text': 'Vertical text drawn horizontally'
+  };
+  window.addEventListener('message', function (e) {
+    var m = e.data && e.data.pluginMessage;
+    if (!m) return;
+    if (m.type === 'progress') progress(m.done, m.total, (m.note || '') + (m.total > 1 ? ' (' + m.done.toLocaleString() + ' of ' + m.total.toLocaleString() + ')' : ''));
+    else if (m.type === 'error') { done(); $('progress').classList.add('hidden'); var r = $('result'); r.classList.remove('hidden'); r.innerHTML = '<span class="err">' + esc(m.message) + '</span>'; }
+    else if (m.type === 'cancelled') { done(); progress(0, 1, 'Stopped after ' + m.done.toLocaleString() + ' layers. What was built is on the page.'); }
+    else if (m.type === 'done') {
+      done(); progress(1, 1, 'Done in ' + (m.summary.ms / 1000).toFixed(1) + ' s');
+      var s = m.summary, h = '<b>Done</b>';
+      h += '<div class="kv"><span>Page frame</span><span>' + esc(s.name) + '</span></div>';
+      h += '<div class="kv"><span>Layers</span><span>' + s.layers.toLocaleString() + '</span></div>';
+      h += '<div class="kv"><span>Frames, shapes, text, drawings</span><span>' + s.stats.frames + ', ' + (s.stats.rects + (s.stats.ellipses || 0)) + ', ' + s.stats.texts + ', ' + s.stats.svgs + '</span></div>';
+      h += '<div class="kv"><span>Pictures placed</span><span>' + s.images.created + ' of ' + s.images.unique + '</span></div>';
+      h += '<div class="kv"><span>Auto layout frames</span><span>' + s.stats.autoLayout + '</span></div>';
+      if (s.sliced) h += '<span class="warn">Only the top ' + s.sliced.y.toLocaleString() + ' px of ' + s.sliced.of.toLocaleString() + ' were built (' + s.sliced.layers.toLocaleString() + ' of ' + s.sliced.was.toLocaleString() + ' layers).</span>';
+      if (s.warnings.length) {
+        h += '<span class="warn">Worth a look:</span><ul>';
+        s.warnings.forEach(function (w) {
+          h += '<li><b>' + esc(WHAT[w.code] || w.code) + '</b>' + (w.n > 1 ? ' × ' + w.n : '') + (w.ex && w.ex.length ? '<div class="sub mono">' + w.ex.map(esc).join('<br>') + '</div>' : '') + '</li>';
+        });
+        h += '</ul>';
+      }
+      var r2 = $('result'); r2.classList.remove('hidden'); r2.innerHTML = h;
+    }
+  });
+  // for tests in a browser: the paste path without the clipboard
+  window.__lunaPaste = function (t) { return fromText(t, false); };
+})();
+</script>
+</body>
+</html>

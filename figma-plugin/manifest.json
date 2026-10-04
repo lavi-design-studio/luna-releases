@@ -1,0 +1,10 @@
+{
+  "name": "Luna import",
+  "id": "1790004004200100001",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": { "allowedDomains": ["none"], "reasoning": "Everything is read from the snapshot folder you choose; nothing is fetched or sent." }
+}
