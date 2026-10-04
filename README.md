@@ -1,3 +1,5 @@
+<img src="docs/img/luna-icon.png" alt="Luna icon: a crescent moon drawn in a grid of square dots" width="96">
+
 # Luna
 
 ![Luna in the Liquid Glass look, dark, with tabs down the side, showing the Wikipedia article on the Moon](docs/img/hero-liquid-glass-dark.jpg)
