@@ -18,7 +18,7 @@ This repository holds **signed releases only**: the latest build is on the
 
 ### 1. The engine is already in Windows, so Luna is small and light
 
-![Luna in the Pearl look with tabs across the top; the frame takes a pink tone from the page behind it](docs/img/pearl-light-top-tabs.jpg)
+![Luna in the Pearl look with tabs across the top, on the Lavi Design Studio site](docs/img/pearl-light-top-tabs.jpg)
 
 Pages run on Chromium through WebView2, the same engine as Edge. Luna itself is a handful of files:
 **about 5.7 MiB installed** (the whole folder with its updater is 16 MiB), **first window in about 0.45 s**
@@ -30,6 +30,10 @@ counted 13 and 12; that comparison is **not like for like** (headless browsers h
 same order", not as a win.
 
 *Pearl (light) with tabs across the top is shown above: the frame follows the colour of the page behind it.*
+
+![Luna in the Liquid Glass look by day, with tabs down the side, showing the Wikipedia article on the Moon](docs/img/glass-light.jpg)
+
+*Liquid Glass by day: the tabs and tools are panes of glass over the page's own light.*
 
 ### 2. At rest it costs nothing
 
@@ -58,7 +62,7 @@ row; tabs you have not opened for a week tidy themselves away, with Undo, and ev
 
 `Ctrl+S` folds the sidebar away and the left edge brings it back, sliding over the page without moving it. The first
 moving frame arrives **20-37 ms after the command** for peek and unfold at 125% scaling (40-56 ms for fold), on
-a critically damped spring that settles without a bounce. The frames above are half-size captures of one peek, taken on the same hidden test copy; the timings come from the
+a critically damped spring that settles without a bounce. The frames above are real captures of one peek (cropped to the left of the window); the timings come from the
 build reports, not from this image.
 
 ### 6. Light that follows the page, and plates you can have quiet or luminous
@@ -74,6 +78,10 @@ contrast either way.
 ![Three frames of the Luminous hover: rest, light pouring in as the pointer arrives, and held](docs/img/luminous-pour-hover.png)
 
 ![Settings, General: the Lit plate choice shown with Quiet and with Luminous](docs/img/settings-lit-plate.png)
+
+![The same two pages in Luna and Liquid Glass: a sunset picture and a warm page, with their colours spilling into the frame](docs/img/ambient.jpg)
+
+The frame takes its light from the page in front of it: a sunset warms the sidebar and the strip above the page, and an orange page does the same in dark and in pearl. Greys stay grey, and with High Contrast on the page's light is not drawn.
 
 ### 7. Design tools in the browser
 
