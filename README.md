@@ -7,6 +7,10 @@ and the page. Luna draws its own window and hands the pages to **WebView2**, the
 so there is no second browser to download, update or keep in memory. It is about 6 MB installed, opens its window in
 under half a second, and its own window uses no CPU while you are not using it.
 
+[![A 12-second loop from the Luna film: a moon of dots becomes the word Luna, then the address field and the page](docs/img/luna-film-teaser.webp)](https://github.com/lavi-design-studio/luna-releases/releases/download/v0.13.5/luna-film-40s.mp4)
+
+**Watch the film:** [Luna in 40 seconds](https://github.com/lavi-design-studio/luna-releases/releases/download/v0.13.5/luna-film-40s.mp4) (motion graphic, 1080p60, 58 MB) · [Luna in 30 seconds](https://github.com/lavi-design-studio/luna-releases/releases/download/v0.13.5/luna-film-30s.mp4) (product film, 15 MB). Everything inside a Luna window in both films is real footage of Luna; the dots, type and transitions are motion graphics, and the music was made for them.
+
 This repository holds **signed releases only**: the latest build is on the
 [Releases page](https://github.com/lavi-design-studio/luna-releases/releases/latest).
 
