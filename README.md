@@ -231,8 +231,11 @@ It is a snapshot of one page at one size: see [Known limits](#known-limits).
 
 - **Video is a frame, WebGL is empty, web fonts are replaced** when a page goes to Figma; the **Figma plugin is a
   snapshot of one page at one size**, not a live link.
-- **Protected video (Widevine)** does not play, because WebView2 does not include it: Netflix, Disney+ and Spotify's
-  web player will not work.
+- **Protected video (Widevine and PlayReady)** plays, using the modules that come with WebView2 (Settings > Privacy >
+  *Play protected video (DRM)*, on by default, with *Reset licences*). Widevine is software level (L3) only, so
+  services may stream at lower quality; Luna does not promise 4K or HDR. PlayReady frames show black in screenshots
+  and screen sharing, as DRM intends. Private tabs use Widevine only. Tested on public test streams (up to 720p) and
+  by loading service pages; **no service was signed in to**, so real Netflix, Disney+ or Spotify playback is untested.
 - Chrome extensions run, but WebView2 has no toolbar, so badges and some Chrome-only APIs are missing; popups open
   in a window of their own.
 - No sync and no bookmark folders. Passwords are Chromium's own (kept in Luna's profile); Luna has no password
