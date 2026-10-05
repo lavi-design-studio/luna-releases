@@ -134,6 +134,21 @@ few hundred KB), **checks that it is signed with Luna's release key** (ECDSA P-2
 or the next time Luna closes. If the new build cannot open a window, the previous one is put back. Nothing restarts
 on its own, and Settings turns updates off. Every file in a release has a `.sig`.
 
+### 12. Calm when things go wrong, and reachable without a mouse
+
+Since 0.14 and 0.15 the quiet parts got the same care as the busy ones:
+
+- **Luna's own error pages and permission prompt.** Offline, a name that does not resolve, a refused connection and a
+  certificate warning now say one thing in Luna's voice, with one button, instead of showing the engine's default page.
+  The certificate page stays safe by default.
+- **Keyboard all the way.** `F6` moves between the regions of the window (tabs, tools, page) and the arrow keys move
+  within one; the buttons carry names for screen readers. Windows' **Text size** setting now scales Luna's type.
+- **Plain pages stay readable.** A page with no stylesheet no longer shows black text on Luna's dark ground, and tabs
+  stop keeping the previous page's icon on an error page.
+- **A clearer window.** In split view the active half is marked; a private tab is night within night ("nothing is
+  kept"); the empty tab suggests `>` until you have some history; **More** is grouped (Page, Design) and **Settings >
+  Keyboard** lists keys by Tabs, Page and Tools; a pinned tab that is playing sound shows it on its tile.
+- **A dot icon that holds at 16 and 24 px**, drawn on a coarser grid at small sizes so the crescent still reads.
 ### And the rest
 
 Pins, **spaces** (each stays signed in or starts afresh), **private tabs**, **hide anything** on a site for good,
@@ -201,6 +216,7 @@ It is a snapshot of one page at one size: see [Known limits](#known-limits).
 | `Ctrl+Alt+J` or `F12` | Developer tools |
 | `Ctrl+,` | Settings |
 | `Ctrl+.` | You: settings, the lists and the other look |
+| `F6` | Move between the regions of the window |
 | `F11` | Full screen |
 | `Esc` | Put away whatever is open |
 
@@ -221,7 +237,7 @@ It is a snapshot of one page at one size: see [Known limits](#known-limits).
   in a window of their own.
 - No sync and no bookmark folders. Passwords are Chromium's own (kept in Luna's profile); Luna has no password
   manager of its own and does not import passwords.
-- **Not verified:** Setup's runtime install on a clean PC; passkeys end to end (the engine reports them available,
+- **Not verified:** F6 focus hand-off on every screen and the Design, Zoom and Extensions submenus of More (checked in builds, not on every real window); Setup's runtime install on a clean PC; passkeys end to end (the engine reports them available,
   no sign-in was run); the import of real Brave, Vivaldi and Firefox profiles (tested on prepared fixtures only).
 - **Numbers** come from one PC. Startup is with a warm file cache; the first launch of a never-run exe can take
   2-3 seconds. Chrome and Edge figures are headless and not like for like with a window.
