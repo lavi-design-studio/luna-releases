@@ -78,8 +78,8 @@ build reports, not from this image.
 Luna comes in two styles, **Luna** (pearl by day, a deep blue-black by night) and **Liquid Glass**, with a light that
 follows the page behind the frame. The tab you are on, the choice you made and the one action that matters are lit;
 everything else recedes. In **Settings > General > Lit plate** you choose **Quiet** (a flat fill of light) or
-**Luminous** (a soft mesh of moonlit colour, which pours in from the edge when the pointer arrives). Words keep their
-contrast either way.
+**Luminous** (a deep plate of glass with light pooled at its rim and foot, which pours in from the edge when the pointer arrives).
+Luminous comes in seven colours (Moon, Ember, Rose, Dusk, Aurora, Graphite, or one that follows the page); the choice is in the same place. Words keep their contrast either way.
 
 ![Three frames of the Luminous hover: rest, light pouring in as the pointer arrives, and held](docs/img/luminous-pour-hover.png)
 
