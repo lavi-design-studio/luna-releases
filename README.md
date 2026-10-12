@@ -15,6 +15,7 @@ under half a second, and its own window uses no CPU while you are not using it.
 
 This repository holds **signed releases only**: the latest build is on the
 [Releases page](https://github.com/lavi-design-studio/luna-releases/releases/latest).
+Luna is also built for the Mac: see [Luna for macOS](https://github.com/lavi-design-studio/luna-mac-releases).
 
 > Screenshots on this page show Wikipedia (text and images under free licences), the
 > [author's own site](https://lavidesign.studio), and Luna's own screens. Numbers were measured on one PC
@@ -27,7 +28,7 @@ This repository holds **signed releases only**: the latest build is on the
 ![Luna in the Pearl look with tabs across the top, on the Lavi Design Studio site](docs/img/pearl-light-top-tabs.jpg)
 
 Pages run on Chromium through WebView2, the same engine as Edge. Luna itself is a handful of files:
-**about 5.7 MiB installed** (the whole folder with its updater is 16 MiB), **first window in about 0.45 s**
+**about 5.9 MiB installed** (the whole folder with its updater is 16 MiB), **first window in about 0.45 s**
 (median 455 ms on a fresh profile, 464 ms on an existing one, 8 runs each), and **one process using about 45 MB**
 before the first page is opened. Chromium starts only when a page does.
 
@@ -58,9 +59,14 @@ Return will take is lit and says what it will do. **Nothing you type is sent any
 
 ### 4. Tabs that cost nothing until you look at them
 
-Last session's tabs come back asleep and wake when you click one, showing their last look at once. A tab left alone
-for five minutes is suspended, and after half an hour put to sleep (unless it is drawing with the GPU). Pins stay in a
-row; tabs you have not opened for a week tidy themselves away, with Undo, and everything remains in history.
+Last session's tabs come back asleep and wake when you click one, showing their last look at once. A tab you leave is
+trimmed after a minute, suspended after five and put to sleep after half an hour, unless it holds something you typed,
+is drawing with the GPU or is on a call. Luna also keeps only as many pages alive as the screen can afford: **five on a
+1080p screen, four on 1440p, three on 4K and up** (and less time on a big screen: ten minutes to sleep on 5K; less again
+on Battery Saver or when memory is low). The least recently used pages beyond that go to sleep, except one you left a
+moment ago. A page with an open connection (a chat, a live dashboard) or a call is trimmed but **never suspended**,
+because a suspended page loses its WebSocket; on WebView2 this was measured, not assumed. Pins stay in a row; tabs you
+have not opened for a week tidy themselves away, with Undo, and everything remains in history.
 
 ### 5. A sidebar that is there when you reach for it
 
@@ -93,9 +99,17 @@ The frame takes its light from the page in front of it: a sunset warms the sideb
 
 ![The design system popover (colours, with contrast ratios) beside the inspect card for an image](docs/img/design-system-and-inspect.png)
 
-- **Grid** (`Ctrl+Shift+G`) draws the page's own CSS grid over it.
-- **Design system** (`Ctrl+Shift+D`) lists the page's colours (with contrast ratios), type and layout; values copy as HEX, RGB or HSL.
-- **Inspect** (`Ctrl+Shift+E`) shows any element's box, size, source and CSS on hover, or pinned.
+- **Grid** (`Ctrl+Shift+G`) draws the page's own CSS grid over it, from the top of the page to its foot.
+- **Design system** (`Ctrl+Shift+D`, or the button left of Extensions) lists the page's colours (with contrast ratios), type and
+  layout; values copy as HEX, RGB or HSL. Its **Viewport** row shows the page at Fit, a phone, tablet, laptop or desktop size,
+  or a width and height of your own, and you drag the frame's handles to resize it: the page really has that size.
+  **Grid** and **Inspect** are switches in the same panel, which stays up while you work on the page.
+- **Inspect** (`Ctrl+Shift+E`) shows any element's box, size, source and CSS on hover, or pinned, and **the distances**
+  between elements: hover one and the gaps to what is next to it show (its siblings on each side, else the edge of what
+  holds it); pin one and hover another and the gap along each axis shows between them (or, inside, how far each edge is
+  from the one around it). Each is a red line with its length in pixels.
+
+![Inspect on the author's site: one block pinned, another under the pointer, the gaps between them in red](docs/img/inspect-distances.jpg)
 
 ### 8. Snapshot a page to Figma, with pictures, auto layout and grids
 
@@ -113,7 +127,8 @@ page: Figma's side comes from the HTML-to-design route, and Figma replaces fonts
 Settings > This PC (or `> import` in the field) brings in bookmarks and history from **Chrome, Edge, Brave, Vivaldi and
 Firefox**. You choose browser and profile; each row says what was found and how much is new; running it again adds
 nothing; Undo removes exactly what was added. **Passwords, cookies, cards and open tabs are never read**, and nothing
-leaves the PC.
+leaves the PC. **Keep in step with** (Settings > This PC) adds what is new in a browser profile's bookmarks and history each
+time Luna starts; what you removed in Luna does not come back.
 
 ### 10. Split view and reading mode
 
@@ -149,11 +164,32 @@ Since 0.14 and 0.15 the quiet parts got the same care as the busy ones:
   kept"); the empty tab suggests `>` until you have some history; **More** is grouped (Page, Design) and **Settings >
   Keyboard** lists keys by Tabs, Page and Tools; a pinned tab that is playing sound shows it on its tile.
 - **A dot icon that holds at 16 and 24 px**, drawn on a coarser grid at small sizes so the crescent still reads.
+### 13. Bookmarks in folders, History on a timeline, and a desk for a new tab
+
+![The Bookmarks page: a drawer of folders, one open, its front tilted forward, a card with a picture of its page](docs/img/bookmarks-folders.jpg)
+
+**Bookmarks** (`Ctrl+Shift+O`) is a page of its own: every bookmark is a card with a picture of its page, kept in a drawer of
+folders you make, each its own colour. Click a folder and its front tilts open toward you, pushing the folders below it down.
+Drag a card onto a folder's tab to move it; view cards or a list, by when you kept it, A to Z or by site. The pictures are made
+out of sight (the page loaded muted, with no downloads, pop-ups or permissions, and nothing added to history) and kept on this PC.
+
+![The History page: days joined by one line that bends to each place](docs/img/history-timeline.jpg)
+
+**History** (`Ctrl+H`) is grouped by day on a timeline: a dot for each day and each place, joined by one line that bends from a
+day to its places, and lights down to the one you point at. *The second day in this picture is staged for it.*
+
+![A new tab: the address field, the pages you were on with pictures, the sites you visit most](docs/img/new-tab-desk.jpg)
+
+A **new tab** is a desk: the field at the top, then **pick up where you left off** (the pages you were on lately that are not open
+now, each with a small picture of the page as you last saw it) and **most visited**. It all comes from the history on this PC;
+nothing is fetched for it. The pictures are small, kept for at most 120 pages, and never made for private tabs or Luna's own pages.
+
 ### And the rest
 
 Pins, **spaces** (each stays signed in or starts afresh), **private tabs**, **hide anything** on a site for good,
-floating video, ad and tracker blocking in the network layer, Chrome extensions straight from the Chrome Web Store,
-per-site zoom and mute, history, bookmarks and downloads panels, a picture of the whole page, and
+floating video, **ad and tracker blocking** in the network layer (about 94,000 hosts from EasyList and EasyPrivacy, third
+party only, and off for any site you choose), Chrome extensions straight from the Chrome Web Store,
+per-site zoom and mute, history, bookmarks and downloads pages, a picture of the whole page, and
 Luna as your default browser.
 
 ## Install
@@ -238,10 +274,14 @@ It is a snapshot of one page at one size: see [Known limits](#known-limits).
   by loading service pages; **no service was signed in to**, so real Netflix, Disney+ or Spotify playback is untested.
 - Chrome extensions run, but WebView2 has no toolbar, so badges and some Chrome-only APIs are missing; popups open
   in a window of their own.
-- No sync and no bookmark folders. Passwords are Chromium's own (kept in Luna's profile); Luna has no password
+- No sync. Passwords are Chromium's own (kept in Luna's profile); Luna has no password
   manager of its own and does not import passwords.
 - **Not verified:** F6 focus hand-off on every screen and the Design, Zoom and Extensions submenus of More (checked in builds, not on every real window); Setup's runtime install on a clean PC; passkeys end to end (the engine reports them available,
   no sign-in was run); the import of real Brave, Vivaldi and Firefox profiles (tested on prepared fixtures only).
+- **The tab cap and the ad list** were sized from measurements on one PC: five hidden news pages at 2560 x 1440 held about
+  1.3 GB of graphics memory and 1.4 GB in their renderers; and the ad list's lookups added 1 to 7 ms over a page's 100 to 270
+  requests. The numbers per screen size are choices made from that, not guarantees. Blocking made some news pages finish
+  loading much sooner (a script from an ad host that hung for 21 seconds, on this PC's network) and others no sooner.
 - **Numbers** come from one PC. Startup is with a warm file cache; the first launch of a never-run exe can take
   2-3 seconds. Chrome and Edge figures are headless and not like for like with a window.
 
@@ -250,5 +290,6 @@ It is a snapshot of one page at one size: see [Known limits](#known-limits).
 Luna follows the structure of [Search](https://officecommun.com/search) by Office Commun (MIT), whose pieces it
 borrows; see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). It learns from the principles of
 [Mercury OS](https://www.mercuryos.com/) by Jason Yuan without copying its look. Pages run on the Microsoft Edge
-**WebView2** runtime. Updates use [Velopack](https://velopack.io). Luna is set in ABC Areal by Dinamo, read from where
+**WebView2** runtime. Updates use [Velopack](https://velopack.io). Shield's long host list is adapted from
+[EasyList and EasyPrivacy](https://easylist.to/) by The EasyList authors, under CC BY-SA 3.0. Luna is set in ABC Areal by Dinamo, read from where
 Windows has it installed, and falls back to Segoe UI Variable.

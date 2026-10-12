@@ -117,3 +117,13 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
+
+## EasyList and EasyPrivacy, by The EasyList authors
+
+Shield's long host list (`Luna.Assets.shield-hosts.txt`, built into Luna) is adapted from EasyList and EasyPrivacy
+(https://easylist.to/): only their plain domain rules are kept, with the hosts their
+exception rules free and a few first-party hosts left out. EasyList and EasyPrivacy are
+dual licensed under the GNU GPL v3 and the Creative Commons Attribution-ShareAlike 3.0
+Unported licence; Luna uses them under CC BY-SA 3.0
+(https://creativecommons.org/licenses/by-sa/3.0/), and the host list is likewise
+distributed under CC BY-SA 3.0. Its header names the list versions it was made from.
