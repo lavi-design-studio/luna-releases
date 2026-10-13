@@ -1,4 +1,4 @@
-<img src="docs/img/luna-icon.png" alt="Luna icon: a crescent moon drawn in a grid of square dots" width="96">
+<img src="docs/img/luna-icon.png" alt="Luna icon: a silver crescent with a star whose arm runs through it, on deep blue glass" width="96">
 
 # Luna
 
@@ -44,9 +44,11 @@ same order", not as a win.
 
 ### 2. At rest it costs nothing
 
-Settled, with a still page or an empty tab in front, Luna's own window uses **0% CPU**. Nothing loops: no spinners, no
-breathing, no timers running behind panels. Everything that moves does so once, for a fraction of a second, and
-stops. Pages Luna cannot see (minimised, on another desktop, or covered for 15 s) stop drawing.
+Settled, with a still page or an empty tab in front, Luna's own window uses **0% CPU**: no spinners, no timers running
+behind panels. Everything that moves does so once, for a fraction of a second, and stops. The one exception is the
+Luminous light, which drifts slowly only with *Let the light move* on (Settings > General), and only while Luna is the
+window in front; with Quiet plates or the light still, nothing moves at all. Pages Luna cannot see (minimised, on another
+desktop, or covered for 15 s) stop drawing.
 
 ### 3. One field that says what it will do
 
@@ -163,7 +165,6 @@ Since 0.14 and 0.15 the quiet parts got the same care as the busy ones:
 - **A clearer window.** In split view the active half is marked; a private tab is night within night ("nothing is
   kept"); the empty tab suggests `>` until you have some history; **More** is grouped (Page, Design) and **Settings >
   Keyboard** lists keys by Tabs, Page and Tools; a pinned tab that is playing sound shows it on its tile.
-- **A dot icon that holds at 16 and 24 px**, drawn on a coarser grid at small sizes so the crescent still reads.
 ### 13. Bookmarks in folders, History on a timeline, and a desk for a new tab
 
 ![The Bookmarks page: a drawer of folders, one open, its front tilted forward, a card with a picture of its page](docs/img/bookmarks-folders.jpg)
